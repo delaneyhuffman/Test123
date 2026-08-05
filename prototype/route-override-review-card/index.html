@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Route Override Approval — Review Card (Prototype)</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --ink: #1f2430;
+      --muted: #626b7a;
+      --line: #e4e7ec;
+      --brand: #2f5bea;
+      --ok: #197a4b;
+      --ok-bg: #e6f4ec;
+      --warn: #9a6a00;
+      --warn-bg: #fbf1d9;
+      --deny: #b42318;
+      --deny-bg: #fdeceb;
+      --safety: #6b21a8;
+      --safety-bg: #f3e8fd;
+      --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+    header.page { margin-bottom: 8px; }
+    h1 { font-size: 24px; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 4px; }
+    .badge-proto {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      color: var(--brand); background: #eaf0ff; border: 1px solid #d3deff;
+      border-radius: 999px; padding: 2px 10px; margin-bottom: 16px;
+    }
+    section { margin-top: 28px; }
+    h2 { font-size: 16px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+
+    /* Role hierarchy banner */
+    .hierarchy { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .role {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 16px; box-shadow: var(--shadow); position: relative;
+    }
+    .role h3 { margin: 0 0 2px; font-size: 15px; }
+    .role .tier { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .role ul { margin: 0; padding-left: 18px; color: var(--ink); }
+    .role li { margin: 2px 0; }
+    .role li.no { color: var(--muted); text-decoration: line-through; }
+    .arrow { text-align: center; color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+
+    /* Legend */
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+      border-radius: 999px; padding: 3px 10px; border: 1px solid transparent;
+    }
+    .chip.requested { color: var(--muted); background: #eef1f5; border-color: var(--line); }
+    .chip.approved { color: var(--ok); background: var(--ok-bg); border-color: #c7e6d5; }
+    .chip.priority { color: var(--warn); background: var(--warn-bg); border-color: #f0dfb0; }
+    .chip.denied { color: var(--deny); background: var(--deny-bg); border-color: #f6cfcb; }
+    .chip.safety { color: var(--safety); background: var(--safety-bg); border-color: #e4ccf7; }
+
+    /* Review cards */
+    .cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .card .top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 16px 18px; border-bottom: 1px solid var(--line);
+    }
+    .card .top .title { font-weight: 600; }
+    .card .top .who { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .card .body { padding: 6px 18px 4px; }
+    .audit { width: 100%; border-collapse: collapse; }
+    .audit tr { border-bottom: 1px solid var(--line); }
+    .audit tr:last-child { border-bottom: none; }
+    .audit th, .audit td { text-align: left; padding: 8px 0; vertical-align: top; font-size: 13px; }
+    .audit th { width: 168px; color: var(--muted); font-weight: 500; }
+    .card .note { padding: 10px 18px 16px; color: var(--muted); font-size: 13px; }
+    .quote { border-left: 3px solid var(--line); margin: 4px 0 0; padding: 2px 0 2px 12px; color: var(--muted); font-style: italic; }
+
+    /* Settings note */
+    .settings {
+      background: #eef4ff; border: 1px solid #d3deff; border-radius: 12px;
+      padding: 14px 16px; color: #23324e;
+    }
+    .settings code { background: #dae6ff; padding: 1px 6px; border-radius: 5px; }
+    .path { font-weight: 600; }
+
+    footer { margin-top: 36px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+    a { color: var(--brand); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page">
+      <div class="badge-proto">Prototype · reviewer-facing artifact</div>
+      <h1>Route Override Approval — Review Card</h1>
+      <p class="sub">A concrete view of how route override decisions are authorized and audited, per the PRD
+        <em>Role-Based Route Override Controls</em>.</p>
+      <p class="sub">Traces to the source Product Signal on enterprise route override authority (RoboFlex, TechWare, FleetOps).</p>
+    </header>
+
+    <section aria-labelledby="hier">
+      <h2 id="hier">Role hierarchy &amp; authority</h2>
+      <div class="hierarchy">
+        <div class="role">
+          <h3>Operator</h3>
+          <div class="tier">Tier 1 · initiate</div>
+          <ul>
+            <li>Suggest / request a reroute</li>
+            <li class="no">Approve own override</li>
+            <li class="no">Resolve conflicts</li>
+          </ul>
+        </div>
+        <div class="role">
+          <h3>Supervisor</h3>
+          <div class="tier">Tier 2 · authorize &amp; prioritize</div>
+          <ul>
+            <li>Approve or deny operator requests</li>
+            <li>Priority override on conflicts</li>
+            <li class="no">Bypass safety hold</li>
+          </ul>
+        </div>
+        <div class="role">
+          <h3>Safety Officer</h3>
+          <div class="tier">Tier 3 · full override</div>
+          <ul>
+            <li>Full override at any time</li>
+            <li>Halt / reroute any robot</li>
+            <li>Overrides supervisor priority</li>
+          </ul>
+        </div>
+      </div>
+      <p class="arrow">Operator → Supervisor → Safety Officer · higher tier can authorize or override lower tiers</p>
+    </section>
+
+    <section aria-labelledby="states">
+      <h2 id="states">Authorization outcome states</h2>
+      <div class="legend">
+        <span class="chip requested">Requested</span>
+        <span class="chip approved">Approved</span>
+        <span class="chip priority">Supervisor priority override</span>
+        <span class="chip denied">Denied</span>
+        <span class="chip safety">Safety override</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="reviews">
+      <h2 id="reviews">Sample review cards</h2>
+      <div class="cards">
+
+        <!-- Scenario 1: RoboFlex — approved by supervisor -->
+        <article class="card">
+          <div class="top">
+            <div>
+              <div class="title">Assembly-line reroute · Robot AL-07</div>
+              <div class="who">RoboFlex Manufacturing · automotive assembly line</div>
+            </div>
+            <span class="chip approved">Approved</span>
+          </div>
+          <div class="body">
+            <table class="audit">
+              <tr><th>User identity</th><td>m.torres (Operator)</td></tr>
+              <tr><th>Role / tier</th><td>Operator · Tier 1</td></tr>
+              <tr><th>Timestamp</th><td>2026-08-05 09:14:22 (UTC-5)</td></tr>
+              <tr><th>Affected robot / route</th><td>AL-07 · Route "Weld cell A → Buffer 3"</td></tr>
+              <tr><th>Action type</th><td>Reroute request</td></tr>
+              <tr><th>Authorization outcome</th><td>Approved</td></tr>
+              <tr><th>Approver</th><td>a.dupont (Supervisor · Tier 2)</td></tr>
+            </table>
+          </div>
+          <div class="note">
+            Follows the customer authority matrix: operators suggest, supervisors authorize.
+            <p class="quote">"route overrides follow our authority matrix" — Andre Dupont, RoboFlex</p>
+          </div>
+        </article>
+
+        <!-- Scenario 2: FleetOps — supervisor priority override on conflict -->
+        <article class="card">
+          <div class="top">
+            <div>
+              <div class="title">Command conflict · Robot FL-22</div>
+              <div class="who">FleetOps Logistics · shift-change command queue</div>
+            </div>
+            <span class="chip priority">Supervisor priority override</span>
+          </div>
+          <div class="body">
+            <table class="audit">
+              <tr><th>User identity</th><td>j.okafor (Supervisor)</td></tr>
+              <tr><th>Role / tier</th><td>Supervisor · Tier 2</td></tr>
+              <tr><th>Timestamp</th><td>2026-08-05 14:02:41 (UTC-5)</td></tr>
+              <tr><th>Affected robot / route</th><td>FL-22 · conflicting reroutes (Dock 1 vs. Dock 4)</td></tr>
+              <tr><th>Action type</th><td>Priority override on conflicting commands</td></tr>
+              <tr><th>Authorization outcome</th><td>Supervisor priority applied → route to Dock 4; competing command blocked</td></tr>
+              <tr><th>Approver</th><td>self (supervisor priority)</td></tr>
+            </table>
+          </div>
+          <div class="note">
+            Resolves the "two operators, opposite directions" conflict with a clear precedence rule.
+            <p class="quote">"When there's a conflict, the supervisor's command should take precedence." — James Okafor, FleetOps</p>
+          </div>
+        </article>
+
+        <!-- Scenario 3: Safety officer full override -->
+        <article class="card">
+          <div class="top">
+            <div>
+              <div class="title">Safety hold + reroute · Robot AL-07</div>
+              <div class="who">RoboFlex Manufacturing · live safety event</div>
+            </div>
+            <span class="chip safety">Safety override</span>
+          </div>
+          <div class="body">
+            <table class="audit">
+              <tr><th>User identity</th><td>l.ng (Safety Officer)</td></tr>
+              <tr><th>Role / tier</th><td>Safety Officer · Tier 3</td></tr>
+              <tr><th>Timestamp</th><td>2026-08-05 09:16:05 (UTC-5)</td></tr>
+              <tr><th>Affected robot / route</th><td>AL-07 · full override (halt → safe route "Buffer 3 → Bay Hold")</td></tr>
+              <tr><th>Action type</th><td>Full safety override</td></tr>
+              <tr><th>Authorization outcome</th><td>Safety override applied; supersedes prior approval</td></tr>
+              <tr><th>Approver</th><td>self (safety authority · Tier 3)</td></tr>
+            </table>
+          </div>
+          <div class="note">
+            Automatic audit capture satisfies the compliance requirement.
+            <p class="quote">"Safety compliance needs to see who authorized what and when. That has to be automatic, not manual." — Lisa Ng, RoboFlex</p>
+          </div>
+        </article>
+
+        <!-- Scenario 4: Denied / blocked -->
+        <article class="card">
+          <div class="top">
+            <div>
+              <div class="title">Out-of-scope override attempt · Robot FL-09</div>
+              <div class="who">FleetOps Logistics · operator self-approval attempt</div>
+            </div>
+            <span class="chip denied">Denied</span>
+          </div>
+          <div class="body">
+            <table class="audit">
+              <tr><th>User identity</th><td>p.reyes (Operator)</td></tr>
+              <tr><th>Role / tier</th><td>Operator · Tier 1</td></tr>
+              <tr><th>Timestamp</th><td>2026-08-05 14:05:10 (UTC-5)</td></tr>
+              <tr><th>Affected robot / route</th><td>FL-09 · Route "Dock 4 → Staging 2"</td></tr>
+              <tr><th>Action type</th><td>Self-approved override (no supervisor)</td></tr>
+              <tr><th>Authorization outcome</th><td>Denied — requires Tier 2 approval</td></tr>
+              <tr><th>Approver</th><td>—</td></tr>
+            </table>
+          </div>
+          <div class="note">
+            Blocked attempts are recorded too, for operational and compliance review.
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section aria-labelledby="settings">
+      <h2 id="settings">Where override settings live</h2>
+      <div class="settings">
+        Route override permission tiers are configured at
+        <span class="path">Fleet Management → Operator Roles → Route Override</span>.
+        This prototype surfaces the path directly to address the discoverability gap raised in onboarding
+        (settings were "not obvious at all" and required an AE walkthrough).
+      </div>
+    </section>
+
+    <footer>
+      Static prototype — no backend, no live fleet control, no persistence. Sample data is illustrative and drawn from
+      PRD evidence. Scope and non-goals are defined in the PRD <em>Role-Based Route Override Controls</em> and its source Product Signal.
+    </footer>
+  </div>
+</body>
+</html>
